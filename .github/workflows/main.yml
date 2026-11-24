@@ -1,0 +1,26 @@
+name: Tailscale macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Enable SSH & VNC and Set Password
+        run: |
+          sudo dscl . -passwd /Users/runner "${{ secrets.MAC_PASSWORD }}"
+          sudo systemsetup -setremotelogin on
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -restart -agent -privs -all
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      - name: Keep session alive
+        run: |
+          echo "Mac is online in Tailscale!"
+          sleep 10800
