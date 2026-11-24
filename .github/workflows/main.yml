@@ -9,18 +9,18 @@ jobs:
     timeout-minutes: 180
 
     steps:
-      - name: Enable SSH & VNC and Set Password
+      - name: Create Admin User & Enable VNC
         run: |
-          sudo dscl . -passwd /Users/runner "${{ secrets.MAC_PASSWORD }}"
-          sudo systemsetup -setremotelogin on
+          sudo sysadminctl -addUser macuser -fullName "Mac User" -password "${{ secrets.MAC_PASSWORD }}" -admin
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -restart -agent -privs -all
 
       - name: Connect to Tailscale
         uses: tailscale/github-action@v3
         with:
           authkey: ${{ secrets.TS_AUTHKEY }}
+          args: --ssh
 
       - name: Keep session alive
         run: |
-          echo "Mac is online in Tailscale!"
+          echo "Mac is online in Tailscale! Connect via SSH or VNC."
           sleep 10800
